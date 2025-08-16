@@ -1,0 +1,54 @@
+
+/**
+ * 再開しないエフェクト
+ */
+interface Exception {
+  def throw(msg: String): Nothing
+}
+
+def div(a: Double, b: Double)  =
+  if (b == 0.0) { do throw("Division by zero") }
+  else { a / b }
+
+// {} の中にはエフェクトを書く、{}は省略して推論させる
+def unsafeDiv(a: Double, b: Double): Double / {} =
+  try {
+    div(a, b)
+  } with Exception {
+    def throw(msg) = {
+      panic(msg)
+    }
+  }
+
+/**
+ * 再開するエフェクト
+ */
+interface Yield[A] {
+  def yield(x: A): Unit
+}
+
+// Infinite fibonacci sequence as a generator function
+def fib(): Unit / { Yield[Int] } = {
+  def inner(a: Int, b: Int): Unit = {
+    do yield(a)
+    inner(b, a + b)
+  }
+  inner(0, 1)
+}
+
+// generate all fibonacci numbers up until the given limit.
+def genFibs(limit: Int): List[Int] / {} = {
+  var count = 0
+  var fibs = []
+  try {
+    fib()
+  } with Yield[Int] {
+    def yield(x) =
+      if (count < limit) {
+        count = count + 1
+        fibs = Cons(x, fibs)
+        resume(()) // <- we resume the computation where yield was invoked
+      }
+  }
+  fibs
+}
