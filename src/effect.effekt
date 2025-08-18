@@ -1,0 +1,22 @@
+
+interface Ask[A] {
+  def ask(): A
+}
+
+def printAsk() : Unit / { Ask[String], IO } = {
+  val value = do ask[String]()
+  println(value)
+}
+
+def askHandler[R] { program: () => R / Ask[String] }: R / io = {  
+  try {  
+    program()  
+  } with Ask[String] {  
+    def ask() = resume("Hello from Ask!")  
+  }  
+}
+
+def askExample() = {  
+  with askHandler;  
+  printAsk()  
+}
