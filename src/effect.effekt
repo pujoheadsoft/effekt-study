@@ -8,7 +8,7 @@ def printAsk() : Unit / { Ask[String], IO } = {
   println(value)
 }
 
-def askHandler[R] { program: () => R / Ask[String] }: R / io = {  
+def askHandler[R] { program: () => R / Ask[String] }: R / IO = {  
   try {  
     program()  
   } with Ask[String] {  
