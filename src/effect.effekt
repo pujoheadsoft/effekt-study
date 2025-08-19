@@ -3,20 +3,54 @@ interface Ask[A] {
   def ask(): A
 }
 
-def printAsk() : Unit / { Ask[String], IO } = {
+interface Emit[A] {
+  def emit(value: A): Unit
+}
+
+def printAsk() : Unit / { Ask[String] } = {
   val value = do ask[String]()
   println(value)
 }
 
-def askHandler[R] { program: () => R / Ask[String] }: R / IO = {  
+def askHandler[R, A](a : A) { action: () => R / Ask[A] }: R / {} = {  
   try {  
-    program()  
-  } with Ask[String] {  
-    def ask() = resume("Hello from Ask!")  
-  }  
+    action()  
+  } with Ask[A] {  
+    def ask() = resume(a)  
+  }
+}
+
+def emitHandler[R] { action: () => R / Emit[String] }: R / {} = {
+  try {
+    action()
+  } with Emit[String] {
+    def emit(value: String) = resume(println(value))
+  }
 }
 
 def askExample() = {  
-  with askHandler;  
-  printAsk()  
+  with askHandler("ask value")
+  printAsk()
+}
+
+def emitExample() = {
+  with emitHandler
+  do emit("Hello world!")
+}
+
+def askEmit[A](): Unit / { Ask[A], Emit[A] } = {
+  val value = do ask[A]()
+  do emit(value)
+}
+
+def exampleAskEmit() = {
+  with askHandler("ask value")
+  with emitHandler
+  askEmit[String]()
+}
+
+def main() : Unit / {} = {
+  askExample()
+  emitExample()
+  exampleAskEmit()
 }
