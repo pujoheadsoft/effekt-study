@@ -1,10 +1,22 @@
 
+// interface宣言は操作を含む新しいエフェクトタイプを作成する。
 interface Ask[A] {
   def ask(): A
 }
 
 interface Emit[A] {
   def emit(value: A): Unit
+}
+
+// 操作が一つならこのようにも宣言できる
+effect ask2[A](): A
+effect emit2[A](value: A): Unit
+
+// effect宣言は既存のエフェクトのセットに名前をつける（エイリアスを作る）
+// ↑と似ているが、パーサは区別しているようだ。
+effect AskEmit[A] = {
+  Ask[A],
+  Emit[A]
 }
 
 def printAsk() : Unit / { Ask[String] } = {
