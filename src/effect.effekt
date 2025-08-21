@@ -36,7 +36,7 @@ def emitHandler[R] { action: () => R / Emit[String] }: R / {} = {
   try {
     action()
   } with Emit[String] {
-    def emit(value: String) = resume(println(value))
+    def emit(value: String) = resume(println("Emit " ++ value))
   }
 }
 
@@ -51,18 +51,20 @@ def emitExample() = {
 }
 
 def askEmit[A](): Unit / { Ask[A], Emit[A] } = {
-  val value = do ask[A]()
-  do emit(value)
+  println("Start")
+  val v = do ask[A]()
+  do emit(v)
+  println("End")
 }
 
 def exampleAskEmit() = {
-  with askHandler("ask value")
+  with askHandler("Ask Value")
   with emitHandler
   askEmit[String]()
 }
 
 def main() : Unit / {} = {
-  askExample()
-  emitExample()
+  // askExample()
+  // emitExample()
   exampleAskEmit()
 }
